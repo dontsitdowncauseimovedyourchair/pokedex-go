@@ -55,8 +55,6 @@ func TestCleanInput(t *testing.T) {
 
 	for _, c := range cases {
 		actual := cleanInput(c.input)
-		// Check the length of the actual slice
-		// if they don't match, use t.Errorf and continue to the next case
 		if len(actual) != len(c.expected) {
 			t.Errorf("Failed:\ninput: %v\nexpected output: %v\nactual output: %v\n", c.input, c.expected, actual)
 			continue
@@ -64,9 +62,6 @@ func TestCleanInput(t *testing.T) {
 		for i := range actual {
 			word := actual[i]
 			expectedWord := c.expected[i]
-			// Check each word in the slice
-			// if they don't match, use t.Errorf to print an error message
-			// and fail the test
 			if word != expectedWord {
 				t.Errorf("Failed:\ninput: %v\nexpected output: %v\nactual output: %v\nMISSMATCH:\nexpected word: %v\nactual word: %v\n", c.input, c.expected, actual, expectedWord, word)
 			}
