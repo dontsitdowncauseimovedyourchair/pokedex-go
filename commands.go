@@ -20,13 +20,13 @@ type cliCommand struct {
 }
 
 type locationResult struct {
-	Count    int
-	Next     *string
-	Previous *string
+	Count    int     `json:"count"`
+	Next     *string `json:"next"`
+	Previous *string `json:"previous"`
 	Results  []struct {
-		Name string
-		Url  string
-	}
+		Name string `json:"name"`
+		URL  string `json:"url"`
+	} `json:"results"`
 }
 
 func commandExit(cfg *config) error {
@@ -43,11 +43,36 @@ func commandHelp(cfg *config) error {
 	return nil
 }
 
-func commandMap(cfg *config) error {
-	if cfg.Previous == nil {
-		fmt.Println("you're on the first page")
+func getLocations(url string) (locationResult, error) {
+	client := &http.Client{
+		Timeout: time.Second * 10,
 	}
 
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return locationResult{}, err
+	}
+
+	res, err := client.Do(req)
+	if err != nil {
+		return locationResult{}, err
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode > 299 {
+		return locationResult{}, fmt.Errorf("response status code not good, indicates flop: %d", res.StatusCode)
+	}
+
+	var locations locationResult
+	decoder := json.NewDecoder(res.Body)
+	err = decoder.Decode(&locations)
+	if err != nil {
+		return locationResult{}, err
+	}
+	return locations, err
+}
+
+func commandMap(cfg *config) error {
 	var url string
 	if cfg.Next != nil {
 		url = *cfg.Next
@@ -55,28 +80,7 @@ func commandMap(cfg *config) error {
 		url = "https://pokeapi.co/api/v2/location-area/"
 	}
 
-	client := &http.Client{
-		Timeout: time.Second * 10,
-	}
-
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		return err
-	}
-
-	res, err := client.Do(req)
-	if err != nil {
-		return err
-	}
-	defer res.Body.Close()
-
-	if res.StatusCode > 299 {
-		return fmt.Errorf("response status code not good, indicates flop: %d", res.StatusCode)
-	}
-
-	var locations locationResult
-	decoder := json.NewDecoder(res.Body)
-	err = decoder.Decode(&locations)
+	locations, err := getLocations(url)
 	if err != nil {
 		return err
 	}
@@ -90,12 +94,40 @@ func commandMap(cfg *config) error {
 	return nil
 }
 
+func commandMapb(cfg *config) error {
+	if cfg.Previous == nil {
+		fmt.Println("you're on the first page")
+		return nil
+	}
+
+	url := *cfg.Previous
+
+	locations, err := getLocations(url)
+	if err != nil {
+		return err
+	}
+
+	cfg.Next = locations.Next
+	cfg.Previous = locations.Previous
+
+	for _, location := range locations.Results {
+		fmt.Println(location.Name)
+	}
+
+	return nil
+}
+
 func getCommands() map[string]cliCommand {
 	return map[string]cliCommand{
 		"map": {
 			name:        "map",
-			description: "Displays the names of 20 location areas in the Pokemon world",
+			description: "Displays the names of the next 20 location areas in the Pokemon world",
 			callback:    commandMap,
+		},
+		"mapb": {
+			name:        "mapb",
+			description: "Display the names of the previous 20 previous location areas in the Pokemon world",
+			callback:    commandMapb,
 		},
 		"help": {
 			name:        "help",
