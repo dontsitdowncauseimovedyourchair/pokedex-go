@@ -4,6 +4,9 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"time"
+
+	"github.com/dontsitdowncauseimovedyourchair/pokedex-go/internal/pokecache"
 )
 
 func main() {
@@ -12,6 +15,7 @@ func main() {
 	var globalConfig config = config{
 		Previous: nil,
 		Next:     nil,
+		cache: pokecache.NewCache(time.Minute * 5),
 	}
 
 	for {
