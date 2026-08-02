@@ -15,7 +15,7 @@ func main() {
 	var globalConfig config = config{
 		Previous: nil,
 		Next:     nil,
-		cache: pokecache.NewCache(time.Minute * 5),
+		cache:    pokecache.NewCache(time.Minute * 5),
 	}
 
 	for {
@@ -30,7 +30,7 @@ func main() {
 		} else {
 			err := comm.callback(&globalConfig)
 			if err != nil {
-				fmt.Printf("Error calling %v: %w", comm.name, err)
+				fmt.Printf("Error calling %v: %v", comm.name, err)
 			}
 		}
 	}

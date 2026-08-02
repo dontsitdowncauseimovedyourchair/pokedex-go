@@ -39,7 +39,7 @@ func commandMap(cfg *config) error {
 	if cfg.Next != nil {
 		url = *cfg.Next
 	} else {
-		url = "https://pokeapi.co/api/v2/location-area/"
+		url = "https://pokeapi.co/api/v2/location-area?offset=0&limit=20"
 	}
 
 	locations, err := pokeapi.GetLocations(url, cfg.cache)
@@ -49,6 +49,7 @@ func commandMap(cfg *config) error {
 
 	cfg.Next = locations.Next
 	cfg.Previous = locations.Previous
+	fmt.Println(cfg.Previous)
 
 	for _, location := range locations.Results {
 		fmt.Println(location.Name)
