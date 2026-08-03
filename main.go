@@ -32,6 +32,9 @@ func main() {
 		scanner.Scan()
 		input := scanner.Text()
 		words := cleanInput(input)
+		if len(words) == 0 {
+			continue
+		}
 		inputCommand := words[0]
 		if comm, ok := getCommands()[inputCommand]; !ok {
 			fmt.Println("Unknown command")
