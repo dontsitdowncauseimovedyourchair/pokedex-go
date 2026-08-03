@@ -28,9 +28,10 @@ func main() {
 			fmt.Println("Unknown command")
 			continue
 		} else {
-			err := comm.callback(&globalConfig)
+			var args []string = words[1:]
+			err := comm.callback(&globalConfig, args)
 			if err != nil {
-				fmt.Printf("Error calling %v: %v", comm.name, err)
+				fmt.Printf("Error calling %v: %v\n", comm.name, err)
 			}
 		}
 	}

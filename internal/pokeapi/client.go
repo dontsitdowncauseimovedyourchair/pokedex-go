@@ -20,7 +20,7 @@ type LocationResult struct {
 	} `json:"results"`
 }
 
-type Location struct {
+type Pokemons struct {
 	PokemonEncounters []struct {
 		Pokemon struct {
 			Name string `json:"name"`
@@ -58,6 +58,9 @@ func GetResource[T any](url string, cache *pokecache.Cache) (T, error) {
 	defer res.Body.Close()
 
 	if res.StatusCode > 299 {
+		if res.StatusCode == 404 {
+			return zero, fmt.Errorf("404 not found")
+		}
 		return zero, fmt.Errorf("response status code not good, indicates flop: %d", res.StatusCode)
 	}
 
@@ -71,7 +74,7 @@ func GetResource[T any](url string, cache *pokecache.Cache) (T, error) {
 		return zero, err
 	}
 
-	// I will only cache if the data was actually unmarshal-able
+	//  Only cache if the data was actually unmarshal-able
 	cache.Add(url, data)
 	return resource, nil
 }

@@ -17,16 +17,16 @@ type config struct {
 type cliCommand struct {
 	name        string
 	description string
-	callback    func(*config) error
+	callback    func(*config, []string) error
 }
 
-func commandExit(cfg *config) error {
+func commandExit(cfg *config, args []string) error {
 	fmt.Println("Closing the Pokedex... Goodbye!")
 	os.Exit(0)
 	return nil
 }
 
-func commandHelp(cfg *config) error {
+func commandHelp(cfg *config, args []string) error {
 	fmt.Printf("Welcome to the Pokedex!\nUsage:\n\n")
 	for _, comm := range getCommands() {
 		fmt.Printf("%v: %v\n", comm.name, comm.description)
@@ -34,7 +34,7 @@ func commandHelp(cfg *config) error {
 	return nil
 }
 
-func commandMap(cfg *config) error {
+func commandMap(cfg *config, args []string) error {
 	var url string
 	if cfg.Next != nil {
 		url = *cfg.Next
@@ -56,7 +56,7 @@ func commandMap(cfg *config) error {
 	return nil
 }
 
-func commandMapb(cfg *config) error {
+func commandMapb(cfg *config, args []string) error {
 	if cfg.Previous == nil {
 		fmt.Println("you're on the first page")
 		return nil
@@ -79,8 +79,34 @@ func commandMapb(cfg *config) error {
 	return nil
 }
 
+func commandExplore(cfg *config, args []string) error {
+	if len(args) == 0 {
+		return fmt.Errorf("usage: explore <area_name1> [area_name2 ... area_name_n]")
+	}
+
+	for _, location := range args {
+		url := "https://pokeapi.co/api/v2/location-area/" + location
+		pokemons, err := pokeapi.GetResource[pokeapi.Pokemons](url, cfg.cache)
+		if err != nil {
+			return fmt.Errorf("%s: %w", location, err)
+		}
+
+		fmt.Printf("Pokemons at %s:\n", location)
+		for _, encounters := range pokemons.PokemonEncounters {
+			fmt.Printf(" - %s\n", encounters.Pokemon.Name)
+		}
+	}
+
+	return nil
+}
+
 func getCommands() map[string]cliCommand {
 	return map[string]cliCommand{
+		"explore": {
+			name:        "explore",
+			description: "Displays the names of the Pokemons you can encounter in a location",
+			callback:    commandExplore,
+		},
 		"map": {
 			name:        "map",
 			description: "Displays the names of the next 20 location areas in the Pokemon world",
