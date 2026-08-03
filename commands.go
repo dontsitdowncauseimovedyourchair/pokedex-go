@@ -151,6 +151,18 @@ func commandInspect(cfg *config, args []string) error {
 	return nil
 }
 
+func commandPokedex(cfg *config, args []string) error {
+	if len(args) != 0 {
+		return fmt.Errorf("usage: pokedex")
+	}
+
+	fmt.Println("Your Pokedex:")
+	for _, pokemon := range cfg.caughtPokemon {
+		fmt.Printf(" - %s\n", pokemon.Name)
+	}
+	return nil
+}
+
 func getCommands() map[string]cliCommand {
 	return map[string]cliCommand{
 		"catch": {
@@ -177,6 +189,11 @@ func getCommands() map[string]cliCommand {
 			name:        "mapb",
 			description: "Display the names of the previous 20 previous location areas in the Pokemon world",
 			callback:    commandMapb,
+		},
+		"pokedex": {
+			name:        "pokedex",
+			description: "Display the Pokedex",
+			callback:    commandPokedex,
 		},
 		"help": {
 			name:        "help",
