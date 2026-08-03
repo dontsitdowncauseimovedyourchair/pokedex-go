@@ -122,9 +122,31 @@ func commandCatch(cfg *config, args []string) error {
 	if roll < chance {
 		//Caught
 		cfg.caughtPokemon[name] = pokemon
-		fmt.Printf("Caught %s!\n", pokemon.Name)
+		fmt.Printf("%s was caught!\n", pokemon.Name)
 	} else {
 		fmt.Printf("%s escaped!\n", pokemon.Name)
+	}
+	return nil
+}
+
+func commandInspect(cfg *config, args []string) error {
+	if len(args) != 1 {
+		return fmt.Errorf("usage: inspect <pokemon_name>")
+	}
+	name := strings.ToLower(args[0])
+	pokemon, ok := cfg.caughtPokemon[name]
+	if !ok {
+		fmt.Printf("You haven't caught %s yet!\n", name)
+		return nil
+	}
+
+	fmt.Printf("Name: %s\nHeight: %v\nWeight: %v\nStats:\n", pokemon.Name, pokemon.Height, pokemon.Weight)
+	for _, stat := range pokemon.Stats {
+		fmt.Printf(" -%s: %v\n", stat.Stat.Name, stat.BaseStat)
+	}
+	fmt.Printf("Types:\n")
+	for _, typ := range pokemon.Types {
+		fmt.Printf(" - %v\n", typ.Type.Name)
 	}
 	return nil
 }
@@ -138,8 +160,13 @@ func getCommands() map[string]cliCommand {
 		},
 		"explore": {
 			name:        "explore",
-			description: "Displays the names of the Pokemons you can encounter in a location",
+			description: "Displays the names of the Pokemon you can encounter in a location",
 			callback:    commandExplore,
+		},
+		"inspect": {
+			name:        "inspect",
+			description: "Displays information about your caught pokemon",
+			callback:    commandInspect,
 		},
 		"map": {
 			name:        "map",
