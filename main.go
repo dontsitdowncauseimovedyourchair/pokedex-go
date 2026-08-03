@@ -6,16 +6,25 @@ import (
 	"os"
 	"time"
 
+	"github.com/dontsitdowncauseimovedyourchair/pokedex-go/internal/pokeapi"
 	"github.com/dontsitdowncauseimovedyourchair/pokedex-go/internal/pokecache"
 )
+
+type config struct {
+	Previous      *string
+	Next          *string
+	cache         *pokecache.Cache
+	caughtPokemon map[string]pokeapi.Pokemon
+}
 
 func main() {
 	scanner := bufio.NewScanner(os.Stdin)
 
 	var globalConfig config = config{
-		Previous: nil,
-		Next:     nil,
-		cache:    pokecache.NewCache(time.Minute * 5),
+		Previous:      nil,
+		Next:          nil,
+		cache:         pokecache.NewCache(time.Minute * 5),
+		caughtPokemon: make(map[string]pokeapi.Pokemon),
 	}
 
 	for {

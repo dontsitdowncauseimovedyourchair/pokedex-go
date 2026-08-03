@@ -2,17 +2,13 @@ package main
 
 import (
 	"fmt"
+	"math/rand/v2"
 	"os"
+	"strings"
+	"time"
 
 	"github.com/dontsitdowncauseimovedyourchair/pokedex-go/internal/pokeapi"
-	"github.com/dontsitdowncauseimovedyourchair/pokedex-go/internal/pokecache"
 )
-
-type config struct {
-	Previous *string
-	Next     *string
-	cache    *pokecache.Cache
-}
 
 type cliCommand struct {
 	name        string
@@ -100,8 +96,46 @@ func commandExplore(cfg *config, args []string) error {
 	return nil
 }
 
+func commandCatch(cfg *config, args []string) error {
+	if len(args) != 1 {
+		return fmt.Errorf("usage: catch <pokemon_name>")
+	}
+	name := strings.ToLower(args[0])
+	if pokemon, exists := cfg.caughtPokemon[name]; exists {
+		fmt.Printf("You have already caught %s\n", pokemon.Name)
+		return nil
+	}
+
+	url := "https://pokeapi.co/api/v2/pokemon/" + name
+	pokemon, err := pokeapi.GetResource[pokeapi.Pokemon](url, cfg.cache)
+	if err != nil {
+		return err
+	}
+
+	expFactor := 154 - int(float64(pokemon.BaseExperience)/0.9)
+	chance := min(95, max(20, expFactor))
+	fmt.Printf("Chance of catching %s: %d%%\n", pokemon.Name, chance)
+	fmt.Printf("Throwing a Pokeball at %s...\n", pokemon.Name)
+	time.Sleep(time.Second * 2)
+
+	roll := rand.IntN(100)
+	if roll < chance {
+		//Caught
+		cfg.caughtPokemon[name] = pokemon
+		fmt.Printf("Caught %s!\n", pokemon.Name)
+	} else {
+		fmt.Printf("%s escaped!\n", pokemon.Name)
+	}
+	return nil
+}
+
 func getCommands() map[string]cliCommand {
 	return map[string]cliCommand{
+		"catch": {
+			name:        "catch",
+			description: "Try to catch a pokemon",
+			callback:    commandCatch,
+		},
 		"explore": {
 			name:        "explore",
 			description: "Displays the names of the Pokemons you can encounter in a location",
