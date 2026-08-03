@@ -42,14 +42,13 @@ func commandMap(cfg *config) error {
 		url = "https://pokeapi.co/api/v2/location-area?offset=0&limit=20"
 	}
 
-	locations, err := pokeapi.GetLocations(url, cfg.cache)
+	locations, err := pokeapi.GetResource[pokeapi.LocationResult](url, cfg.cache)
 	if err != nil {
 		return err
 	}
 
 	cfg.Next = locations.Next
 	cfg.Previous = locations.Previous
-	fmt.Println(cfg.Previous)
 
 	for _, location := range locations.Results {
 		fmt.Println(location.Name)
@@ -65,7 +64,7 @@ func commandMapb(cfg *config) error {
 
 	url := *cfg.Previous
 
-	locations, err := pokeapi.GetLocations(url, cfg.cache)
+	locations, err := pokeapi.GetResource[pokeapi.LocationResult](url, cfg.cache)
 	if err != nil {
 		return err
 	}
